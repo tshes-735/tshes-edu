@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="東新教務處" />
   <meta name="theme-color" content="#FFFFFF" />
-  <title>臺中市東新國小教務處｜數位服務入口</title>
+  <title>臺中市東新國小教務處｜數位服務入口 v1.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -104,8 +104,10 @@
           教務登入
         </button>
         <div v-else class="flex items-center gap-1.5 sm:gap-2">
-          <span class="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-800 text-xs font-bold">
-            {{ currentStaffBadge }}
+          <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold"
+            :class="isSystemAdmin ? 'bg-indigo-100/80 text-indigo-800' : 'bg-sky-50 text-sky-800'">
+            <span>{{ isSystemAdmin ? '👑' : '✏️' }}</span>
+            <span>{{ currentStaffBadge }}</span>
           </span>
           <button type="button" @click="adminMode = !adminMode"
             :class="adminMode ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'"
@@ -139,7 +141,6 @@
 
       <!-- 1. 首頁總覽 (HOME) -->
       <template v-if="activePage === 'home'">
-        <!-- 現代活力漸層主視覺 Hero 橫幅 -->
         <section class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-indigo-600 via-sky-600 to-teal-500 p-6 sm:p-8 text-white shadow-sm">
           <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div class="space-y-2.5 max-w-2xl">
@@ -213,10 +214,10 @@
           </div>
         </section>
 
-        <!-- 四大核心功能 Bento 網格（導入低飽和柔和漸層微光，色彩豐富卻不雜亂） -->
+        <!-- 四大核心功能 Bento 網格 -->
         <section v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
 
-          <!-- 卡片 1：新生入學專區（珊瑚粉橘微光） -->
+          <!-- 卡片 1：新生入學專區 -->
           <article @click="goPage('freshman')"
             class="cursor-pointer group relative overflow-hidden rounded-[28px] p-6 bg-gradient-to-br from-rose-50/85 via-white to-orange-50/60 border border-rose-200/75 hover:border-rose-400 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between active:scale-[0.99]">
             <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-rose-500 to-orange-400"></div>
@@ -250,7 +251,7 @@
             </div>
           </article>
 
-          <!-- 卡片 2：學習網站專區（翡翠青綠微光） -->
+          <!-- 卡片 2：學習網站專區 -->
           <article @click="goPage('learning')"
             class="cursor-pointer group relative overflow-hidden rounded-[28px] p-6 bg-gradient-to-br from-emerald-50/85 via-white to-teal-50/60 border border-emerald-200/75 hover:border-emerald-400 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between active:scale-[0.99]">
             <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400"></div>
@@ -284,7 +285,7 @@
             </div>
           </article>
 
-          <!-- 卡片 3：各項申辦手續（暖陽琥珀微光） -->
+          <!-- 卡片 3：各項申辦手續 -->
           <article @click="goPage('forms')"
             class="cursor-pointer group relative overflow-hidden rounded-[28px] p-6 bg-gradient-to-br from-amber-50/85 via-white to-yellow-50/60 border border-amber-200/75 hover:border-amber-400 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between active:scale-[0.99]">
             <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 to-yellow-400"></div>
@@ -318,7 +319,7 @@
             </div>
           </article>
 
-          <!-- 卡片 4：組織與課程計畫（晴空靛藍微光） -->
+          <!-- 卡片 4：組織與課程計畫 -->
           <article @click="goPage('org')"
             class="cursor-pointer group relative overflow-hidden rounded-[28px] p-6 bg-gradient-to-br from-sky-50/85 via-white to-indigo-50/60 border border-sky-200/75 hover:border-sky-400 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between active:scale-[0.99]">
             <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-sky-500 to-indigo-500"></div>
@@ -576,7 +577,12 @@
       <!-- 全站極簡頁尾聯繫卡片 -->
       <footer class="bg-white rounded-[28px] p-5 sm:p-6 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-slate-600">
         <div class="space-y-1">
-          <p class="font-extrabold text-slate-900 text-sm sm:text-base">🏫 {{ siteData.footer.schoolName }}</p>
+          <div class="flex flex-wrap items-center gap-2">
+            <p class="font-extrabold text-slate-900 text-sm sm:text-base">🏫 {{ siteData.footer.schoolName }}</p>
+            <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/80 text-[10px] font-extrabold">
+              {{ siteData.versionLabel }}
+            </span>
+          </div>
           <p class="text-slate-500">📍 {{ siteData.footer.address }} ｜ 📠 {{ siteData.footer.fax }}</p>
         </div>
         <a :href="'tel:' + siteData.footer.telDial"
@@ -586,30 +592,42 @@
       </footer>
     </div>
 
-    <!-- ==================== 【後台管理模式：防呆、排序與全文字獨立編修】 ==================== -->
+    <!-- ==================== 【後台管理模式：雙層權限控管】 ==================== -->
     <div v-else class="space-y-5 pb-6">
 
       <div class="rounded-[28px] bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-sm">
         <div>
           <div class="flex flex-wrap items-center gap-2">
-            <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold">教務處視覺化後台</span>
-            <span class="px-2.5 py-0.5 rounded-full bg-white/10 text-slate-200 text-[11px] font-bold">{{ currentStaffBadge }}</span>
+            <span class="px-2.5 py-0.5 rounded-full bg-sky-500/25 text-sky-200 border border-sky-400/30 text-[11px] font-extrabold">
+              {{ siteData.versionLabel }}
+            </span>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold"
+              :class="isSystemAdmin ? 'bg-amber-400/25 text-amber-200 border border-amber-400/30' : 'bg-white/10 text-slate-200'">
+              {{ isSystemAdmin ? '👑 系統管理者（最高權限）' : '✏️ 內容管理者' }}
+            </span>
             <span v-if="hasUnsavedChanges" class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[11px] font-extrabold animate-pulse">
               ● 尚有未發布變更
             </span>
           </div>
-          <h2 class="text-lg sm:text-xl font-extrabold mt-1.5">獨立編修所有頁面文字、區塊排序與超連結</h2>
-          <p class="text-xs text-slate-400 mt-0.5">目前登入：{{ userSession.email }}</p>
+          <h2 class="text-lg sm:text-xl font-extrabold mt-1.5">
+            {{ isSystemAdmin ? '系統全局設定、人員權限與全站內容管理' : '網頁區塊與內容維護管理' }}
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">目前登入：{{ currentStaffBadge }}（{{ userSession.email }}）</p>
         </div>
+
         <div class="flex flex-wrap gap-2">
-          <button v-if="cloudConnected" type="button" @click="reloadFromCloud"
+          <button v-if="isSystemAdmin" type="button" @click="saveAndExportBaseline" :disabled="saving"
+            class="min-h-[42px] px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/30 text-xs font-bold transition">
+            📌 封存第一版基準檔
+          </button>
+          <button v-if="isSystemAdmin && cloudConnected" type="button" @click="reloadFromCloud"
             class="min-h-[42px] px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold transition">
             🔄 還原雲端版本
           </button>
           <button type="button" @click="exportJson" class="min-h-[42px] px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold transition">
             📤 匯出備份
           </button>
-          <label class="min-h-[42px] px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold cursor-pointer flex items-center transition">
+          <label v-if="isSystemAdmin" class="min-h-[42px] px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold cursor-pointer flex items-center transition">
             📥 還原備份
             <input type="file" accept=".json" @change="importJson" class="hidden" />
           </label>
@@ -620,9 +638,9 @@
         </div>
       </div>
 
-      <!-- 後台六大獨立編輯分頁 -->
+      <!-- 後台分頁列（內容管理者自動隱藏「人員與權限管理」） -->
       <div class="flex gap-2 overflow-x-auto no-scrollbar">
-        <button v-for="t in adminTabs" :key="t.id" type="button" @click="adminTab = t.id"
+        <button v-for="t in visibleAdminTabs" :key="t.id" type="button" @click="adminTab = t.id"
           :class="adminTab === t.id ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white text-slate-700 border border-slate-200'"
           class="min-h-[38px] px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition shrink-0">
           {{ t.label }}
@@ -632,7 +650,7 @@
       <!-- 分頁 1：首頁總覽與頁尾全文字編輯 -->
       <section v-if="adminTab === 'general'" class="space-y-4">
         <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 space-y-3">
-          <h3 class="text-sm font-extrabold text-slate-900">1. 網站標題與首頁歡迎橫幅文字</h3>
+          <h3 class="text-sm font-extrabold text-slate-900">1. 網站標題、版本標記與首頁歡迎橫幅文字</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-500 mb-1">網站主標題</label>
@@ -647,6 +665,11 @@
               <input v-model="siteData.bannerTag" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-base" />
             </div>
             <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">系統版本標記</label>
+              <input v-model="siteData.versionLabel" :disabled="!isSystemAdmin" type="text"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-base font-bold disabled:bg-slate-100 disabled:text-slate-400" />
+            </div>
+            <div class="sm:col-span-2">
               <label class="block text-xs font-bold text-slate-500 mb-1">首頁橫幅大標題</label>
               <input v-model="siteData.bannerTitle" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-base font-bold" />
             </div>
@@ -939,53 +962,65 @@
         </div>
       </section>
 
-      <!-- 分頁 6：後台登入人員名冊管理 -->
-      <section v-if="adminTab === 'staff'" class="space-y-4">
-        <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
+      <!-- 分頁 6：系統管理者專屬「人員帳號與權限管理」 -->
+      <section v-if="adminTab === 'staff' && isSystemAdmin" class="space-y-4">
+        <div class="bg-white rounded-3xl p-5 sm:p-6 border border-indigo-200 shadow-xs space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
             <div>
-              <h3 class="text-base font-extrabold text-slate-900">👥 後台管理人員名冊（顯示登入者職務與姓名）</h3>
-              <p class="text-xs text-slate-500 mt-0.5">在此綁定管理員 Email 與職務稱謂，登入後頂部即會顯示對應的主任／組長／老師身分。</p>
+              <span class="px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-[11px] font-extrabold">系統管理者專屬權限</span>
+              <h3 class="text-base sm:text-lg font-extrabold text-slate-900 mt-1">👥 教務人員帳號、權限分級與狀態管理</h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                可直接在此新增老師帳號並設定登入密碼、指派「系統管理者」或「內容管理者」，或隨時停用／刪除帳號並同步至雲端。
+              </p>
             </div>
-            <button type="button" @click="addStaffMember"
-              class="min-h-[38px] px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-extrabold shadow-xs active:scale-95 transition">
-              ＋ 新增管理人員
+            <button type="button" @click="openUserModal(null)"
+              class="min-h-[42px] px-4 py-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs font-extrabold shadow-xs active:scale-95 transition">
+              ＋ 新增使用者帳號
             </button>
           </div>
 
-          <div class="space-y-3 pt-2">
-            <div v-for="(member, idx) in siteData.staffMembers" :key="member.id"
-              class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2.5">
-              <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
-                <div class="sm:col-span-3">
-                  <label class="block text-[11px] font-bold text-slate-500 mb-1">職務類別</label>
-                  <select v-model="member.role" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 font-bold text-slate-900 text-base">
-                    <option value="教務主任">教務主任</option>
-                    <option value="教學組長">教學組長</option>
-                    <option value="註冊組長">註冊組長</option>
-                    <option value="設備組長">設備組長</option>
-                    <option value="資訊組長">資訊組長</option>
-                    <option value="系統管理師">系統管理師</option>
-                    <option value="協辦老師">協辦老師</option>
-                  </select>
+          <div class="space-y-3">
+            <div v-for="member in siteData.staffMembers" :key="member.id"
+              :class="member.status === 'disabled' ? 'bg-slate-100/80 border-slate-200 opacity-75' : 'bg-slate-50/70 border-slate-200/80'"
+              class="p-4 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-3 transition">
+              <div class="space-y-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-lg text-xs font-extrabold"
+                    :class="member.permission === '系統管理者' ? 'bg-indigo-600 text-white' : 'bg-sky-100 text-sky-800'">
+                    {{ member.permission === '系統管理者' ? '👑 系統管理者' : '✏️ 內容管理者' }}
+                  </span>
+                  <span class="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700 text-xs font-bold">
+                    {{ member.role }}
+                  </span>
+                  <h4 class="text-sm sm:text-base font-extrabold text-slate-900 truncate">{{ member.name || '未命名人員' }}</h4>
+                  <span v-if="isRootAdmin(member.email)" class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold">
+                    最高主帳號
+                  </span>
+                  <span v-if="member.status === 'disabled'" class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-extrabold">
+                    ⛔ 已停用
+                  </span>
+                  <span v-else class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-extrabold">
+                    ● 啟用中
+                  </span>
                 </div>
-                <div class="sm:col-span-3">
-                  <label class="block text-[11px] font-bold text-slate-500 mb-1">姓名 / 稱謂</label>
-                  <input v-model="member.name" type="text" placeholder="例：王大明 主任"
-                    class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 font-bold text-base" />
-                </div>
-                <div class="sm:col-span-4">
-                  <label class="block text-[11px] font-bold text-slate-500 mb-1">綁定登入信箱 (Email)</label>
-                  <input v-model.trim="member.email" type="email" placeholder="teacher@tshes.tc.edu.tw"
-                    class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-base" />
-                </div>
-                <div class="sm:col-span-2 flex justify-end">
-                  <button type="button" @click="safeRemove(siteData.staffMembers, idx, member.id)"
-                    :class="confirmDeleteId === member.id ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600'"
-                    class="min-h-[38px] px-3 py-2 rounded-xl text-xs font-bold transition">
-                    {{ confirmDeleteId === member.id ? '確定刪除？' : '刪除' }}
-                  </button>
-                </div>
+                <p class="text-xs text-slate-500 font-mono truncate">{{ member.email }}</p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2 shrink-0">
+                <button type="button" @click="openUserModal(member)"
+                  class="min-h-[36px] px-3 py-1.5 rounded-xl bg-white hover:bg-slate-900 hover:text-white border border-slate-200 text-slate-700 text-xs font-bold transition">
+                  編輯／改密碼
+                </button>
+                <button v-if="!isRootAdmin(member.email)" type="button" @click="toggleUserStatus(member)"
+                  :class="member.status === 'disabled' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'"
+                  class="min-h-[36px] px-3 py-1.5 rounded-xl border text-xs font-bold transition">
+                  {{ member.status === 'disabled' ? '✅ 恢復啟用' : '⏸️ 停用帳號' }}
+                </button>
+                <button v-if="!isRootAdmin(member.email)" type="button" @click="deleteStaffUser(member)"
+                  :class="confirmDeleteId === member.id ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600'"
+                  class="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-bold transition">
+                  {{ confirmDeleteId === member.id ? '確定刪除？' : '刪除' }}
+                </button>
               </div>
             </div>
           </div>
@@ -995,7 +1030,76 @@
     </div>
   </main>
 
-  <!-- 純淨教務處人員登入 Modal -->
+  <!-- 新增／編輯使用者帳號 Modal（系統管理者專用） -->
+  <div v-if="userModal.open" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4"
+    @click.self="userModal.open = false">
+    <form @submit.prevent="submitUserModal" class="bg-white w-full max-w-md rounded-[28px] p-6 space-y-4 shadow-xl">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-extrabold text-slate-900">
+          {{ userModal.isEdit ? '✏️ 編輯人員資料與權限' : '➕ 新增教務後台使用者' }}
+        </h3>
+        <button type="button" @click="userModal.open = false" class="w-9 h-9 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center justify-center">✕</button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">系統權限等級</label>
+            <select v-model="userModal.form.permission" :disabled="isRootAdmin(userModal.form.email)"
+              class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-900 text-base disabled:bg-slate-100">
+              <option value="內容管理者">內容管理者</option>
+              <option value="系統管理者">系統管理者</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">校內職務稱謂</label>
+            <select v-model="userModal.form.role" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-900 text-base">
+              <option value="教務主任">教務主任</option>
+              <option value="教學組長">教學組長</option>
+              <option value="註冊組長">註冊組長</option>
+              <option value="設備組長">設備組長</option>
+              <option value="資訊組長">資訊組長</option>
+              <option value="系統管理師">系統管理師</option>
+              <option value="協辦老師">協辦老師</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">教師姓名</label>
+          <input v-model.trim="userModal.form.name" type="text" required placeholder="例：林老師"
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-base font-bold" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">登入信箱 (Email)</label>
+          <input v-model.trim="userModal.form.email" type="email" required :disabled="userModal.isEdit"
+            placeholder="teacher@tshes.tc.edu.tw"
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-base disabled:bg-slate-100 disabled:text-slate-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">
+            {{ userModal.isEdit ? '重設登入密碼（不修改請留白）' : '設定初始登入密碼（至少 6 碼）' }}
+          </label>
+          <input v-model="userModal.form.password" type="text" :required="!userModal.isEdit" minlength="6"
+            :placeholder="userModal.isEdit ? '留白代表維持原密碼' : '例：tshes2026'"
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-base font-mono" />
+        </div>
+      </div>
+
+      <div class="p-3 rounded-2xl bg-slate-50 text-[11px] text-slate-600 leading-relaxed">
+        <strong>權限說明：</strong>「系統管理者」可修改全部設定及管理所有使用者帳號；「內容管理者」僅可編輯前台網頁內容與區塊。
+      </div>
+
+      <button type="submit" :disabled="userSaving"
+        class="min-h-[46px] w-full py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-sm font-extrabold active:scale-95 transition">
+        {{ userSaving ? '雲端同步處理中...' : (userModal.isEdit ? '儲存變更並同步雲端' : '建立帳號並同步雲端') }}
+      </button>
+    </form>
+  </div>
+
+  <!-- 純淨教務處人員登入 Modal (通用提示，不顯示特定個人帳號) -->
   <div v-if="showLoginModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4"
     @click.self="showLoginModal = false">
     <form @submit.prevent="handleLogin" class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-4 shadow-xl">
@@ -1041,8 +1145,10 @@
 
   const SUPABASE_URL = 'https://qwytkzffzjabtrpeuciu.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_M-629gaDzZ09Wxzn91Y0OQ_PGFVyJv_';
+  const ROOT_ADMIN_EMAIL = 'derek1468@tshes.tc.edu.tw';
 
   const DEFAULT_SITE_DATA = {
+    versionLabel: 'v1.0 第一版',
     siteTitle: '臺中市東新國小教務處',
     subtitle: '115學年度 · 數位校務與學習服務入口',
     bannerTag: '快樂學習 · 雙語國際 · 本土扎根',
@@ -1161,10 +1267,7 @@
       ]
     },
     staffMembers: [
-      { id: 'st1', role: '教務主任', name: '教務主任', email: '' },
-      { id: 'st2', role: '教學組長', name: '教學組長', email: '' },
-      { id: 'st3', role: '註冊組長', name: '註冊組長', email: '' },
-      { id: 'st4', role: '設備組長', name: '設備與資訊組長', email: '' }
+      { id: 'st_root', permission: '系統管理者', role: '系統管理師', name: 'Derek 最高管理者', email: ROOT_ADMIN_EMAIL, status: 'active' }
     ],
     footer: {
       schoolName: '臺中市東勢區東新國民小學・教務處',
@@ -1177,7 +1280,7 @@
 
   createApp({
     setup() {
-      const CACHE_KEY = 'tshes_minimal_portal_v8';
+      const CACHE_KEY = 'tshes_official_v1_rbac';
       const isSupabaseConfigured = SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20;
       const supabase = isSupabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
@@ -1187,10 +1290,11 @@
       const cloudConnected = ref(false);
       const userSession = ref(null);
       const adminMode = ref(false);
-      const adminTab = ref('curriculum');
+      const adminTab = ref('general');
       const showLoginModal = ref(false);
       const loggingIn = ref(false);
       const saving = ref(false);
+      const userSaving = ref(false);
       const hasUnsavedChanges = ref(false);
       const lastPublishedSnapshot = ref('');
       const confirmDeleteId = ref('');
@@ -1201,6 +1305,13 @@
       const loginForm = reactive({ email: '', password: '' });
       const siteData = reactive(JSON.parse(JSON.stringify(DEFAULT_SITE_DATA)));
 
+      const userModal = reactive({
+        open: false,
+        isEdit: false,
+        editId: '',
+        form: { permission: '內容管理者', role: '協辦老師', name: '', email: '', password: '' }
+      });
+
       const navItems = [
         { id: 'home', icon: '🏠', label: '首頁總覽', activeClass: 'bg-slate-900 text-white shadow-xs' },
         { id: 'freshman', icon: '🎒', label: '新生入學', activeClass: 'bg-gradient-to-r from-rose-600 to-orange-500 text-white shadow-xs' },
@@ -1209,21 +1320,59 @@
         { id: 'org', icon: '🏛️', label: '組織與課程', activeClass: 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-xs' }
       ];
 
-      const adminTabs = [
-        { id: 'general', label: '🏠 首頁與頁尾文字' },
-        { id: 'freshman', label: '🎒 新生入學編修' },
-        { id: 'learning', label: '🚀 學習網站編修' },
-        { id: 'forms', label: '📝 申辦手續編修' },
-        { id: 'curriculum', label: '🏛️ 組織與課程計畫' },
-        { id: 'staff', label: '👥 後台人員名冊' }
-      ];
+      const isRootAdmin = (email) => (email || '').trim().toLowerCase() === ROOT_ADMIN_EMAIL;
+
+      const ensureRootAdminInList = () => {
+        const idx = siteData.staffMembers.findIndex(m => isRootAdmin(m.email));
+        if (idx === -1) {
+          siteData.staffMembers.unshift({
+            id: 'st_root',
+            permission: '系統管理者',
+            role: '系統管理師',
+            name: 'Derek 最高管理者',
+            email: ROOT_ADMIN_EMAIL,
+            status: 'active'
+          });
+        } else {
+          siteData.staffMembers[idx].permission = '系統管理者';
+          siteData.staffMembers[idx].status = 'active';
+          siteData.staffMembers[idx].email = ROOT_ADMIN_EMAIL;
+        }
+      };
+
+      const currentStaffRecord = computed(() => {
+        if (!userSession.value) return null;
+        const email = (userSession.value.email || '').toLowerCase();
+        return siteData.staffMembers.find(m => (m.email || '').toLowerCase() === email) || null;
+      });
+
+      const isSystemAdmin = computed(() => {
+        if (!userSession.value) return false;
+        if (isRootAdmin(userSession.value.email)) return true;
+        return currentStaffRecord.value?.permission === '系統管理者';
+      });
 
       const currentStaffBadge = computed(() => {
         if (!userSession.value) return '';
-        const email = (userSession.value.email || '').toLowerCase();
-        const found = siteData.staffMembers.find(m => (m.email || '').toLowerCase() === email);
-        if (found) return `${found.role}・${found.name}`;
-        return '教務處管理員';
+        if (currentStaffRecord.value) {
+          return `${currentStaffRecord.value.role}・${currentStaffRecord.value.name}`;
+        }
+        if (isRootAdmin(userSession.value.email)) return '系統管理師・Derek';
+        return '內容管理者';
+      });
+
+      const visibleAdminTabs = computed(() => {
+        const base = [
+          { id: 'general', label: '🏠 首頁與頁尾文字' },
+          { id: 'freshman', label: '🎒 新生入學編修' },
+          { id: 'learning', label: '🚀 學習網站編修' },
+          { id: 'forms', label: '📝 申辦手續編修' },
+          { id: 'curriculum', label: '🏛️ 組織與課程計畫' }
+        ];
+        if (isSystemAdmin.value) {
+          base.push({ id: 'staff', label: '👥 人員與權限管理' });
+        }
+        return base;
       });
 
       const globalSearchResults = computed(() => {
@@ -1266,7 +1415,7 @@
       const showToast = (msg) => {
         toastMsg.value = msg;
         if (toastTimer) clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => { toastMsg.value = ''; }, 3000);
+        toastTimer = setTimeout(() => { toastMsg.value = ''; }, 3200);
       };
 
       const copyLink = async (url, label) => {
@@ -1313,19 +1462,157 @@
         if (mainScroll.value) mainScroll.value.scrollTop = 0;
       };
 
-      const addStaffMember = () => {
-        siteData.staffMembers.push({
-          id: 'st_' + Date.now(),
-          role: '協辦老師',
-          name: '',
-          email: ''
-        });
+      const enforceAccountStatus = async () => {
+        if (!userSession.value) return true;
+        if (isRootAdmin(userSession.value.email)) return true;
+        const rec = currentStaffRecord.value;
+        if (rec && rec.status === 'disabled') {
+          if (supabase) {
+            try { await supabase.auth.signOut(); } catch (e) {}
+          }
+          userSession.value = null;
+          adminMode.value = false;
+          showToast('⛔ 此帳號已被系統管理者停用，請聯繫管理員');
+          return false;
+        }
+        return true;
+      };
+
+      const openUserModal = (member) => {
+        if (!isSystemAdmin.value) return;
+        if (member) {
+          userModal.isEdit = true;
+          userModal.editId = member.id;
+          userModal.form = {
+            permission: isRootAdmin(member.email) ? '系統管理者' : (member.permission || '內容管理者'),
+            role: member.role || '協辦老師',
+            name: member.name || '',
+            email: member.email || '',
+            password: ''
+          };
+        } else {
+          userModal.isEdit = false;
+          userModal.editId = '';
+          userModal.form = {
+            permission: '內容管理者',
+            role: '協辦老師',
+            name: '',
+            email: '',
+            password: ''
+          };
+        }
+        userModal.open = true;
+      };
+
+      const submitUserModal = async () => {
+        if (!isSystemAdmin.value) return;
+        const emailLower = userModal.form.email.trim().toLowerCase();
+        if (!emailLower) return;
+
+        userSaving.value = true;
+        try {
+          if (userModal.isEdit) {
+            const idx = siteData.staffMembers.findIndex(m => m.id === userModal.editId);
+            if (idx !== -1) {
+              siteData.staffMembers[idx].permission = isRootAdmin(emailLower) ? '系統管理者' : userModal.form.permission;
+              siteData.staffMembers[idx].role = userModal.form.role;
+              siteData.staffMembers[idx].name = userModal.form.name;
+            }
+            if (supabase) {
+              const { error } = await supabase.rpc('admin_manage_user', {
+                action: 'update',
+                target_email: emailLower,
+                target_password: userModal.form.password || null,
+                target_meta: { permission: userModal.form.permission, role: userModal.form.role, name: userModal.form.name }
+              });
+              if (error) {
+                showToast('⚠️ 名冊已更新，若需同步改密碼請先執行 SQL 函式');
+              }
+            }
+            await saveToCloud();
+            userModal.open = false;
+            showToast(`✅ 已更新「${userModal.form.name}」資料並同步雲端`);
+          } else {
+            if (siteData.staffMembers.some(m => (m.email || '').toLowerCase() === emailLower)) {
+              showToast('⚠️ 此 Email 已存在於人員名冊中');
+              userSaving.value = false;
+              return;
+            }
+            if (supabase) {
+              const { error } = await supabase.rpc('admin_manage_user', {
+                action: 'create',
+                target_email: emailLower,
+                target_password: userModal.form.password,
+                target_meta: { permission: userModal.form.permission, role: userModal.form.role, name: userModal.form.name }
+              });
+              if (error) {
+                showToast('建立失敗：' + (error.message || '請確認已執行 admin_manage_user SQL'));
+                userSaving.value = false;
+                return;
+              }
+            }
+            siteData.staffMembers.push({
+              id: 'st_' + Date.now(),
+              permission: userModal.form.permission,
+              role: userModal.form.role,
+              name: userModal.form.name,
+              email: emailLower,
+              status: 'active'
+            });
+            await saveToCloud();
+            userModal.open = false;
+            showToast(`🎉 已建立「${userModal.form.name}」帳號並同步至雲端！`);
+          }
+        } catch (e) {
+          showToast('操作發生異常，請稍後再試');
+        } finally {
+          userSaving.value = false;
+        }
+      };
+
+      const toggleUserStatus = async (member) => {
+        if (!isSystemAdmin.value || isRootAdmin(member.email)) return;
+        const nextDisabled = member.status !== 'disabled';
+        member.status = nextDisabled ? 'disabled' : 'active';
+        if (supabase) {
+          try {
+            await supabase.rpc('admin_manage_user', {
+              action: nextDisabled ? 'disable' : 'enable',
+              target_email: member.email
+            });
+          } catch (e) {}
+        }
+        await saveToCloud();
+        showToast(nextDisabled ? `⏸️ 已停用「${member.name}」並同步雲端` : `✅ 已恢復啟用「${member.name}」`);
+      };
+
+      const deleteStaffUser = async (member) => {
+        if (!isSystemAdmin.value || isRootAdmin(member.email)) return;
+        if (confirmDeleteId.value !== member.id) {
+          confirmDeleteId.value = member.id;
+          if (confirmTimer) clearTimeout(confirmTimer);
+          confirmTimer = setTimeout(() => { confirmDeleteId.value = ''; }, 3000);
+          return;
+        }
+        confirmDeleteId.value = '';
+        if (supabase) {
+          try {
+            await supabase.rpc('admin_manage_user', {
+              action: 'delete',
+              target_email: member.email
+            });
+          } catch (e) {}
+        }
+        const idx = siteData.staffMembers.findIndex(m => m.id === member.id);
+        if (idx !== -1) siteData.staffMembers.splice(idx, 1);
+        await saveToCloud();
+        showToast(`🗑️ 已刪除「${member.name}」帳號並同步雲端`);
       };
 
       const applySiteData = (incoming) => {
         if (!incoming) return;
         const scalarKeys = [
-          'siteTitle', 'subtitle', 'bannerTag', 'bannerTitle', 'noticeText',
+          'versionLabel', 'siteTitle', 'subtitle', 'bannerTag', 'bannerTitle', 'noticeText',
           'learningPageTitle', 'learningPageSubtitle',
           'formsPageTitle', 'formsPageSubtitle', 'formsReminderTitle',
           'orgPageTitle', 'orgPageSubtitle'
@@ -1338,7 +1625,14 @@
         if (Array.isArray(incoming.learningCategories)) siteData.learningCategories = incoming.learningCategories;
         if (Array.isArray(incoming.formsList)) siteData.formsList = incoming.formsList;
         if (Array.isArray(incoming.formsReminders)) siteData.formsReminders = incoming.formsReminders;
-        if (Array.isArray(incoming.staffMembers)) siteData.staffMembers = incoming.staffMembers;
+        if (Array.isArray(incoming.staffMembers)) {
+          siteData.staffMembers = incoming.staffMembers.map(m => ({
+            ...m,
+            permission: m.permission || (isRootAdmin(m.email) ? '系統管理者' : '內容管理者'),
+            status: m.status || 'active'
+          }));
+        }
+        ensureRootAdminInList();
       };
 
       const fetchCloudData = async () => {
@@ -1347,10 +1641,10 @@
           const { data, error } = await supabase.from('site_config').select('payload').eq('id', 'main_v4').maybeSingle();
           if (!error && data && data.payload) {
             applySiteData(data.payload);
-            const snap = JSON.stringify(siteData);
-            lastPublishedSnapshot.value = snap;
+            lastPublishedSnapshot.value = JSON.stringify(siteData);
             hasUnsavedChanges.value = false;
             cloudConnected.value = true;
+            await enforceAccountStatus();
             return true;
           }
         } catch (e) {}
@@ -1364,7 +1658,7 @@
 
       const handleLogin = async () => {
         if (!supabase) {
-          userSession.value = { email: loginForm.email || 'admin@tshes.tc.edu.tw' };
+          userSession.value = { email: loginForm.email || ROOT_ADMIN_EMAIL };
           showLoginModal.value = false;
           adminMode.value = true;
           return;
@@ -1376,13 +1670,18 @@
             password: loginForm.password
           });
           if (error) {
-            showToast('登入失敗：帳號或密碼錯誤');
+            showToast('登入失敗：帳號、密碼錯誤或帳號已停用');
           } else {
             userSession.value = data.user;
-            showLoginModal.value = false;
-            adminMode.value = true;
-            loginForm.password = '';
-            showToast('✅ 登入成功，歡迎進入教務管理後台');
+            await fetchCloudData();
+            const allowed = await enforceAccountStatus();
+            if (allowed) {
+              showLoginModal.value = false;
+              adminMode.value = true;
+              adminTab.value = 'general';
+              loginForm.password = '';
+              showToast(`✅ 登入成功（${isSystemAdmin.value ? '系統管理者' : '內容管理者'}）`);
+            }
           }
         } catch (e) {
           showToast('連線異常，請稍後再試');
@@ -1401,44 +1700,60 @@
       };
 
       const saveToCloud = async () => {
+        ensureRootAdminInList();
         const cleanPayload = JSON.parse(JSON.stringify(siteData));
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(cleanPayload)); } catch (e) {}
         if (!supabase) {
           lastPublishedSnapshot.value = JSON.stringify(cleanPayload);
           hasUnsavedChanges.value = false;
           showToast('💾 已儲存至本機');
-          return;
+          return true;
         }
         saving.value = true;
         try {
           const { error } = await supabase.from('site_config').upsert({ id: 'main_v4', payload: cleanPayload });
           if (error) {
             showToast('雲端發布失敗：請檢查資料表權限');
+            return false;
           } else {
             cloudConnected.value = true;
             lastPublishedSnapshot.value = JSON.stringify(cleanPayload);
             hasUnsavedChanges.value = false;
             showToast('🎉 已發布至雲端！全校師生與家長即時同步');
+            return true;
           }
         } catch (e) {
           showToast('儲存異常，請檢查網路');
+          return false;
         } finally {
           saving.value = false;
         }
       };
 
-      const exportJson = () => {
+      const downloadJsonFile = (filename) => {
         try {
           const blob = new Blob([JSON.stringify(siteData, null, 2)], { type: 'application/json' });
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
-          a.download = `東新教務處全站備份_${new Date().toISOString().slice(0, 10)}.json`;
+          a.download = filename;
           a.click();
-          showToast('📤 全站備份檔已下載');
         } catch (e) {}
       };
 
+      const exportJson = () => {
+        downloadJsonFile(`東新教務處全站備份_${new Date().toISOString().slice(0, 10)}.json`);
+        showToast('📤 全站備份檔已下載');
+      };
+
+      const saveAndExportBaseline = async () => {
+        if (!isSystemAdmin.value) return;
+        await saveToCloud();
+        downloadJsonFile('東新教務處_v1.0第一版_基準備份.json');
+        showToast('📌 已完成雲端發布並下載 v1.0 第一版基準備份檔！');
+      };
+
       const importJson = (e) => {
+        if (!isSystemAdmin.value) return;
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
@@ -1459,6 +1774,7 @@
           const cached = localStorage.getItem(CACHE_KEY);
           if (cached) applySiteData(JSON.parse(cached));
         } catch (e) {}
+        ensureRootAdminInList();
         lastPublishedSnapshot.value = JSON.stringify(siteData);
 
         if (supabase) {
@@ -1481,10 +1797,11 @@
       return {
         activePage, mainScroll, globalQuery, globalSearchResults,
         cloudConnected, userSession, adminMode, adminTab,
-        showLoginModal, loggingIn, saving, hasUnsavedChanges, confirmDeleteId, toastMsg,
-        loginForm, siteData, navItems, adminTabs, currentStaffBadge,
-        goPage, copyLink, safeRemove, moveItem, addStaffMember,
-        handleLogin, handleLogout, saveToCloud, reloadFromCloud,
+        showLoginModal, loggingIn, saving, userSaving, hasUnsavedChanges, confirmDeleteId, toastMsg,
+        loginForm, siteData, userModal, navItems, visibleAdminTabs, isSystemAdmin, currentStaffBadge,
+        isRootAdmin, goPage, copyLink, safeRemove, moveItem,
+        openUserModal, submitUserModal, toggleUserStatus, deleteStaffUser,
+        handleLogin, handleLogout, saveToCloud, saveAndExportBaseline, reloadFromCloud,
         exportJson, importJson
       };
     }
