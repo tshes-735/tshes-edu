@@ -171,7 +171,7 @@
         <section class="bg-white rounded-2xl p-2.5 border border-slate-200/80 shadow-xs">
           <form @submit.prevent class="relative flex items-center">
             <span class="pl-3 pr-2 text-slate-400 text-base">🔍</span>
-            <input v-model.trim="globalQuery" type="search" placeholder="快速搜尋全站資源：輸入「委託書」、「發音」、「客語」、「特教」、「進度」..."
+            <input v-model.trim="globalQuery" type="search" placeholder="快速搜尋：輸入「委託書」、「發音」、「客語」、「粵寧里」、「進度」..."
               class="w-full py-2 pr-9 bg-transparent text-base text-slate-900 placeholder-slate-400 outline-none" />
             <button v-if="globalQuery" type="button" @click="globalQuery = ''"
               class="absolute right-2.5 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold flex items-center justify-center">
@@ -191,12 +191,22 @@
           <div v-if="globalSearchResults.length === 0" class="py-8 text-center text-slate-500 space-y-1">
             <p class="text-2xl">🧐</p>
             <p class="text-sm font-bold text-slate-700">找不到符合的項目</p>
-            <p class="text-xs">請嘗試其他關鍵字，例如：報到、英語、母語、轉入、課綱</p>
+            <p class="text-xs">請嘗試其他關鍵字，例如：報到、英語、母語、轉入、課綱、學區</p>
           </div>
           <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div v-for="res in globalSearchResults" :key="res.id"
               class="p-4 rounded-2xl bg-slate-50/80 hover:bg-sky-50/60 border border-slate-200/80 flex items-center justify-between gap-3 transition">
-              <a :href="res.url" target="_blank" rel="noopener" class="flex items-start gap-3 min-w-0 flex-1">
+              <button v-if="res.internalPage" type="button" @click="goPage(res.internalPage)" class="flex items-start gap-3 min-w-0 flex-1 text-left">
+                <span class="text-2xl shrink-0">{{ res.icon }}</span>
+                <div class="min-w-0">
+                  <span class="inline-block px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-100 text-[10px] font-bold mb-1">
+                    {{ res.source }}
+                  </span>
+                  <h4 class="text-sm font-extrabold text-slate-900 truncate">{{ res.title }}</h4>
+                  <p class="text-xs text-slate-500 truncate mt-0.5">{{ res.desc }}</p>
+                </div>
+              </button>
+              <a v-else :href="res.url" target="_blank" rel="noopener" class="flex items-start gap-3 min-w-0 flex-1">
                 <span class="text-2xl shrink-0">{{ res.icon }}</span>
                 <div class="min-w-0">
                   <span class="inline-block px-2 py-0.5 rounded-md bg-white text-sky-700 border border-sky-100 text-[10px] font-bold mb-1">
@@ -206,7 +216,7 @@
                   <p class="text-xs text-slate-500 truncate mt-0.5">{{ res.desc }}</p>
                 </div>
               </a>
-              <button type="button" @click="copyLink(res.url, res.title)" title="複製連結"
+              <button v-if="res.url" type="button" @click="copyLink(res.url, res.title)" title="複製連結"
                 class="min-h-[38px] px-3 py-1.5 rounded-xl bg-white hover:bg-slate-900 hover:text-white border border-slate-200 text-slate-600 text-xs font-bold shrink-0 transition">
                 複製
               </button>
@@ -595,6 +605,22 @@
     <!-- ==================== 【後台管理模式：雙層權限控管】 ==================== -->
     <div v-else class="space-y-5 pb-6">
 
+      <!-- 多人協作覆蓋衝突警告橫幅 -->
+      <div v-if="conflictWarning" class="rounded-3xl bg-amber-50 border-2 border-amber-400 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+        <div class="space-y-1">
+          <p class="text-sm font-extrabold text-amber-950">⚠️ 偵測到雲端有其他管理員剛發布的新版本（{{ conflictWarning }}）</p>
+          <p class="text-xs text-amber-800">為避免覆蓋他人剛修改的內容，請選擇「載入最新雲端資料」或「強制以我的版本覆蓋」。</p>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <button type="button" @click="reloadFromCloud" class="min-h-[38px] px-3.5 py-2 rounded-xl bg-white border border-amber-300 text-amber-900 text-xs font-extrabold">
+            🔄 載入最新資料
+          </button>
+          <button type="button" @click="forceSaveToCloud" class="min-h-[38px] px-3.5 py-2 rounded-xl bg-amber-600 text-white text-xs font-extrabold">
+            強制覆蓋發布
+          </button>
+        </div>
+      </div>
+
       <div class="rounded-[28px] bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-sm">
         <div>
           <div class="flex flex-wrap items-center gap-2">
@@ -638,7 +664,7 @@
         </div>
       </div>
 
-      <!-- 後台分頁列（內容管理者自動隱藏「人員與權限管理」） -->
+      <!-- 後台分頁列 -->
       <div class="flex gap-2 overflow-x-auto no-scrollbar">
         <button v-for="t in visibleAdminTabs" :key="t.id" type="button" @click="adminTab = t.id"
           :class="adminTab === t.id ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white text-slate-700 border border-slate-200'"
@@ -717,10 +743,26 @@
         <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 space-y-3">
           <h3 class="text-sm font-extrabold text-slate-900">3. 全站頁尾學校聯繫資訊</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input v-model="siteData.footer.schoolName" type="text" placeholder="學校名稱" class="px-3.5 py-2.5 rounded-xl border border-slate-200 text-base font-bold" />
-            <input v-model="siteData.footer.address" type="text" placeholder="學校地址" class="px-3.5 py-2.5 rounded-xl border border-slate-200 text-base" />
-            <input v-model="siteData.footer.fax" type="text" placeholder="傳真號碼" class="px-3.5 py-2.5 rounded-xl border border-slate-200 text-base" />
-            <input v-model="siteData.footer.telDisplay" type="text" placeholder="電話顯示文字" class="px-3.5 py-2.5 rounded-xl border border-slate-200 text-base" />
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">單位名稱</label>
+              <input v-model="siteData.footer.schoolName" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-base font-bold" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">學校地址</label>
+              <input v-model="siteData.footer.address" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-base" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">傳真資訊</label>
+              <input v-model="siteData.footer.fax" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-base" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">電話按鈕顯示文字</label>
+              <input v-model="siteData.footer.telDisplay" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-base" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold text-slate-500 mb-1">點擊撥號實際號碼（純數字）</label>
+              <input v-model.trim="siteData.footer.telDial" type="tel" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-base font-mono" />
+            </div>
           </div>
         </div>
       </section>
@@ -746,7 +788,7 @@
               <input v-model="siteData.freshman.onlineTitle" type="text" placeholder="卡片標題" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-base font-bold" />
               <input v-model="siteData.freshman.onlinePeriod" type="text" placeholder="報到日期時間" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
               <input v-model="siteData.freshman.onlineBtnText" type="text" placeholder="按鈕文字" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
-              <input v-model="siteData.freshman.onlineUrl" type="url" placeholder="報到系統網址" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
+              <input v-model.trim="siteData.freshman.onlineUrl" @blur="siteData.freshman.onlineUrl = normalizeUrl(siteData.freshman.onlineUrl)" type="url" placeholder="報到系統網址" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
             </div>
             <textarea v-model="siteData.freshman.onlineDesc" rows="2" placeholder="線上報到說明文字" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-base"></textarea>
           </div>
@@ -832,7 +874,7 @@
                 <input v-model="item.icon" type="text" class="sm:col-span-1 text-center px-2 py-2 rounded-xl bg-white border border-slate-200 text-base" />
                 <input v-model="item.title" type="text" placeholder="網站名稱" class="sm:col-span-3 px-3 py-2 rounded-xl bg-white border border-slate-200 text-base font-bold" />
                 <input v-model="item.badge" type="text" placeholder="標籤(選填)" class="sm:col-span-2 px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
-                <input v-model="item.url" type="url" placeholder="完整網址" class="sm:col-span-4 px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
+                <input v-model.trim="item.url" @blur="item.url = normalizeUrl(item.url)" type="url" placeholder="完整網址" class="sm:col-span-4 px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
                 <div class="sm:col-span-2 flex items-center justify-end gap-1">
                   <button type="button" @click="moveItem(cat.items, iIdx, -1)" :disabled="iIdx === 0" class="px-2 py-2 rounded-lg bg-white border border-slate-200 text-xs disabled:opacity-30">↑</button>
                   <button type="button" @click="moveItem(cat.items, iIdx, 1)" :disabled="iIdx === cat.items.length - 1" class="px-2 py-2 rounded-lg bg-white border border-slate-200 text-xs disabled:opacity-30">↓</button>
@@ -878,7 +920,7 @@
               </div>
             </div>
             <input v-model="f.desc" type="text" placeholder="表單說明文字" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
-            <input v-model="f.url" type="url" placeholder="Google 雲端文件或表單網址" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
+            <input v-model.trim="f.url" @blur="f.url = normalizeUrl(f.url)" type="url" placeholder="Google 雲端文件或表單網址" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
           </div>
         </div>
 
@@ -926,7 +968,7 @@
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-500 mb-1">學校課程總體架構網址</label>
-              <input v-model="siteData.curriculum.mainUrl" type="url" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-base" />
+              <input v-model.trim="siteData.curriculum.mainUrl" @blur="siteData.curriculum.mainUrl = normalizeUrl(siteData.curriculum.mainUrl)" type="url" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-base" />
             </div>
           </div>
           <div>
@@ -946,7 +988,7 @@
               <input v-model="cItem.icon" type="text" class="sm:col-span-1 text-center px-2 py-2 rounded-xl bg-white border border-slate-200 text-base" />
               <input v-model="cItem.tag" type="text" placeholder="分類標籤" class="sm:col-span-2 px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
               <input v-model="cItem.title" type="text" placeholder="計畫標題" class="sm:col-span-3 px-3 py-2 rounded-xl bg-white border border-slate-200 text-base font-bold" />
-              <input v-model="cItem.url" type="url" placeholder="連結網址" class="sm:col-span-4 px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
+              <input v-model.trim="cItem.url" @blur="cItem.url = normalizeUrl(cItem.url)" type="url" placeholder="連結網址" class="sm:col-span-4 px-3 py-2 rounded-xl bg-white border border-slate-200 text-base" />
               <div class="sm:col-span-2 flex items-center justify-end gap-1">
                 <button type="button" @click="moveItem(siteData.curriculum.links, idx, -1)" :disabled="idx === 0" class="px-2 py-2 rounded-lg bg-white border border-slate-200 text-xs disabled:opacity-30">↑</button>
                 <button type="button" @click="moveItem(siteData.curriculum.links, idx, 1)" :disabled="idx === siteData.curriculum.links.length - 1" class="px-2 py-2 rounded-lg bg-white border border-slate-200 text-xs disabled:opacity-30">↓</button>
@@ -1030,10 +1072,10 @@
     </div>
   </main>
 
-  <!-- 新增／編輯使用者帳號 Modal（系統管理者專用） -->
+  <!-- 新增／編輯使用者帳號 Modal（含小螢幕安全滾動） -->
   <div v-if="userModal.open" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4"
     @click.self="userModal.open = false">
-    <form @submit.prevent="submitUserModal" class="bg-white w-full max-w-md rounded-[28px] p-6 space-y-4 shadow-xl">
+    <form @submit.prevent="submitUserModal" class="bg-white w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-[28px] p-6 space-y-4 shadow-xl">
       <div class="flex items-center justify-between">
         <h3 class="text-base font-extrabold text-slate-900">
           {{ userModal.isEdit ? '✏️ 編輯人員資料與權限' : '➕ 新增教務後台使用者' }}
@@ -1082,7 +1124,7 @@
           <label class="block text-xs font-bold text-slate-700 mb-1">
             {{ userModal.isEdit ? '重設登入密碼（不修改請留白）' : '設定初始登入密碼（至少 6 碼）' }}
           </label>
-          <input v-model="userModal.form.password" type="text" :required="!userModal.isEdit" minlength="6"
+          <input v-model.trim="userModal.form.password" type="text" :required="!userModal.isEdit"
             :placeholder="userModal.isEdit ? '留白代表維持原密碼' : '例：tshes2026'"
             class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-base font-mono" />
         </div>
@@ -1099,10 +1141,10 @@
     </form>
   </div>
 
-  <!-- 純淨教務處人員登入 Modal (通用提示，不顯示特定個人帳號) -->
+  <!-- 純淨教務處人員登入 Modal（通用提示，含小螢幕安全滾動） -->
   <div v-if="showLoginModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4"
     @click.self="showLoginModal = false">
-    <form @submit.prevent="handleLogin" class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-4 shadow-xl">
+    <form @submit.prevent="handleLogin" class="bg-white w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-[28px] p-6 space-y-4 shadow-xl">
       <div class="flex items-center justify-between">
         <h3 class="text-base font-extrabold text-slate-900">🔐 教務處管理人員登入</h3>
         <button type="button" @click="showLoginModal = false" class="w-9 h-9 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center justify-center">✕</button>
@@ -1141,7 +1183,7 @@
 </div>
 
 <script>
-  const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
+  const { createApp, ref, reactive, computed, watch, onMounted, onUnmounted } = Vue;
 
   const SUPABASE_URL = 'https://qwytkzffzjabtrpeuciu.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_M-629gaDzZ09Wxzn91Y0OQ_PGFVyJv_';
@@ -1297,6 +1339,8 @@
       const userSaving = ref(false);
       const hasUnsavedChanges = ref(false);
       const lastPublishedSnapshot = ref('');
+      const loadedCloudTimestamp = ref(0);
+      const conflictWarning = ref('');
       const confirmDeleteId = ref('');
       let confirmTimer = null;
       const toastMsg = ref('');
@@ -1319,6 +1363,23 @@
         { id: 'forms', icon: '📝', label: '申辦手續', activeClass: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs' },
         { id: 'org', icon: '🏛️', label: '組織與課程', activeClass: 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-xs' }
       ];
+
+      const normalizeUrl = (raw) => {
+        const val = (raw || '').trim();
+        if (!val) return '';
+        if (/^(https?:\/\/|mailto:|tel:)/i.test(val)) return val;
+        return 'https://' + val;
+      };
+
+      const normalizeAllUrls = () => {
+        siteData.freshman.onlineUrl = normalizeUrl(siteData.freshman.onlineUrl);
+        siteData.curriculum.mainUrl = normalizeUrl(siteData.curriculum.mainUrl);
+        siteData.learningCategories.forEach(cat => {
+          cat.items.forEach(item => { item.url = normalizeUrl(item.url); });
+        });
+        siteData.formsList.forEach(f => { f.url = normalizeUrl(f.url); });
+        siteData.curriculum.links.forEach(c => { c.url = normalizeUrl(c.url); });
+      };
 
       const isRootAdmin = (email) => (email || '').trim().toLowerCase() === ROOT_ADMIN_EMAIL;
 
@@ -1389,6 +1450,18 @@
             url: siteData.freshman.onlineUrl
           });
         }
+        siteData.freshman.districts.forEach(d => {
+          if ((d.type + d.areas).toLowerCase().includes(q)) {
+            list.push({
+              id: 'sr_' + d.id,
+              icon: '🗺️',
+              source: '學區查詢（點擊進入專區）',
+              title: d.type,
+              desc: d.areas,
+              internalPage: 'freshman'
+            });
+          }
+        });
         siteData.learningCategories.forEach(cat => {
           cat.items.forEach(item => {
             if ((item.title + item.desc + cat.title).toLowerCase().includes(q)) {
@@ -1507,14 +1580,26 @@
       const submitUserModal = async () => {
         if (!isSystemAdmin.value) return;
         const emailLower = userModal.form.email.trim().toLowerCase();
+        const cleanPwd = (userModal.form.password || '').trim();
         if (!emailLower) return;
+
+        if (!userModal.isEdit && cleanPwd.length < 6) {
+          showToast('⚠️ 初始登入密碼至少需 6 個字元');
+          return;
+        }
+        if (userModal.isEdit && cleanPwd.length > 0 && cleanPwd.length < 6) {
+          showToast('⚠️ 新密碼至少需 6 個字元（不修改請留白）');
+          return;
+        }
+
+        const effectivePermission = isRootAdmin(emailLower) ? '系統管理者' : userModal.form.permission;
 
         userSaving.value = true;
         try {
           if (userModal.isEdit) {
             const idx = siteData.staffMembers.findIndex(m => m.id === userModal.editId);
             if (idx !== -1) {
-              siteData.staffMembers[idx].permission = isRootAdmin(emailLower) ? '系統管理者' : userModal.form.permission;
+              siteData.staffMembers[idx].permission = effectivePermission;
               siteData.staffMembers[idx].role = userModal.form.role;
               siteData.staffMembers[idx].name = userModal.form.name;
             }
@@ -1522,14 +1607,14 @@
               const { error } = await supabase.rpc('admin_manage_user', {
                 action: 'update',
                 target_email: emailLower,
-                target_password: userModal.form.password || null,
-                target_meta: { permission: userModal.form.permission, role: userModal.form.role, name: userModal.form.name }
+                target_password: cleanPwd || null,
+                target_meta: { permission: effectivePermission, role: userModal.form.role, name: userModal.form.name }
               });
               if (error) {
                 showToast('⚠️ 名冊已更新，若需同步改密碼請先執行 SQL 函式');
               }
             }
-            await saveToCloud();
+            await forceSaveToCloud();
             userModal.open = false;
             showToast(`✅ 已更新「${userModal.form.name}」資料並同步雲端`);
           } else {
@@ -1542,8 +1627,8 @@
               const { error } = await supabase.rpc('admin_manage_user', {
                 action: 'create',
                 target_email: emailLower,
-                target_password: userModal.form.password,
-                target_meta: { permission: userModal.form.permission, role: userModal.form.role, name: userModal.form.name }
+                target_password: cleanPwd,
+                target_meta: { permission: effectivePermission, role: userModal.form.role, name: userModal.form.name }
               });
               if (error) {
                 showToast('建立失敗：' + (error.message || '請確認已執行 admin_manage_user SQL'));
@@ -1553,13 +1638,13 @@
             }
             siteData.staffMembers.push({
               id: 'st_' + Date.now(),
-              permission: userModal.form.permission,
+              permission: effectivePermission,
               role: userModal.form.role,
               name: userModal.form.name,
               email: emailLower,
               status: 'active'
             });
-            await saveToCloud();
+            await forceSaveToCloud();
             userModal.open = false;
             showToast(`🎉 已建立「${userModal.form.name}」帳號並同步至雲端！`);
           }
@@ -1582,7 +1667,7 @@
             });
           } catch (e) {}
         }
-        await saveToCloud();
+        await forceSaveToCloud();
         showToast(nextDisabled ? `⏸️ 已停用「${member.name}」並同步雲端` : `✅ 已恢復啟用「${member.name}」`);
       };
 
@@ -1605,12 +1690,12 @@
         }
         const idx = siteData.staffMembers.findIndex(m => m.id === member.id);
         if (idx !== -1) siteData.staffMembers.splice(idx, 1);
-        await saveToCloud();
+        await forceSaveToCloud();
         showToast(`🗑️ 已刪除「${member.name}」帳號並同步雲端`);
       };
 
       const applySiteData = (incoming) => {
-        if (!incoming) return;
+        if (!incoming || typeof incoming !== 'object') return;
         const scalarKeys = [
           'versionLabel', 'siteTitle', 'subtitle', 'bannerTag', 'bannerTitle', 'noticeText',
           'learningPageTitle', 'learningPageSubtitle',
@@ -1618,11 +1703,23 @@
           'orgPageTitle', 'orgPageSubtitle'
         ];
         scalarKeys.forEach(k => { if (incoming[k] !== undefined) siteData[k] = incoming[k]; });
-        if (incoming.homeCards) Object.assign(siteData.homeCards, incoming.homeCards);
-        if (incoming.freshman) Object.assign(siteData.freshman, incoming.freshman);
-        if (incoming.curriculum) Object.assign(siteData.curriculum, incoming.curriculum);
-        if (incoming.footer) Object.assign(siteData.footer, incoming.footer);
-        if (Array.isArray(incoming.learningCategories)) siteData.learningCategories = incoming.learningCategories;
+        if (incoming.homeCards && typeof incoming.homeCards === 'object') Object.assign(siteData.homeCards, incoming.homeCards);
+        if (incoming.freshman && typeof incoming.freshman === 'object') {
+          Object.assign(siteData.freshman, incoming.freshman);
+          if (!Array.isArray(siteData.freshman.districts)) siteData.freshman.districts = [];
+          if (!Array.isArray(siteData.freshman.requirements)) siteData.freshman.requirements = [];
+        }
+        if (incoming.curriculum && typeof incoming.curriculum === 'object') {
+          Object.assign(siteData.curriculum, incoming.curriculum);
+          if (!Array.isArray(siteData.curriculum.links)) siteData.curriculum.links = [];
+        }
+        if (incoming.footer && typeof incoming.footer === 'object') Object.assign(siteData.footer, incoming.footer);
+        if (Array.isArray(incoming.learningCategories)) {
+          siteData.learningCategories = incoming.learningCategories.map(c => ({
+            ...c,
+            items: Array.isArray(c.items) ? c.items : []
+          }));
+        }
         if (Array.isArray(incoming.formsList)) siteData.formsList = incoming.formsList;
         if (Array.isArray(incoming.formsReminders)) siteData.formsReminders = incoming.formsReminders;
         if (Array.isArray(incoming.staffMembers)) {
@@ -1632,6 +1729,7 @@
             status: m.status || 'active'
           }));
         }
+        if (incoming._updatedAt) loadedCloudTimestamp.value = Number(incoming._updatedAt) || 0;
         ensureRootAdminInList();
       };
 
@@ -1643,6 +1741,7 @@
             applySiteData(data.payload);
             lastPublishedSnapshot.value = JSON.stringify(siteData);
             hasUnsavedChanges.value = false;
+            conflictWarning.value = '';
             cloudConnected.value = true;
             await enforceAccountStatus();
             return true;
@@ -1696,16 +1795,24 @@
         }
         userSession.value = null;
         adminMode.value = false;
+        conflictWarning.value = '';
         showToast('已安全登出後台');
       };
 
-      const saveToCloud = async () => {
+      const executeCloudUpsert = async () => {
+        normalizeAllUrls();
         ensureRootAdminInList();
+        const nowTs = Date.now();
         const cleanPayload = JSON.parse(JSON.stringify(siteData));
+        cleanPayload._updatedAt = nowTs;
+        cleanPayload._updatedBy = currentStaffBadge.value || (userSession.value?.email || '');
+
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(cleanPayload)); } catch (e) {}
         if (!supabase) {
-          lastPublishedSnapshot.value = JSON.stringify(cleanPayload);
+          loadedCloudTimestamp.value = nowTs;
+          lastPublishedSnapshot.value = JSON.stringify(siteData);
           hasUnsavedChanges.value = false;
+          conflictWarning.value = '';
           showToast('💾 已儲存至本機');
           return true;
         }
@@ -1717,8 +1824,10 @@
             return false;
           } else {
             cloudConnected.value = true;
-            lastPublishedSnapshot.value = JSON.stringify(cleanPayload);
+            loadedCloudTimestamp.value = nowTs;
+            lastPublishedSnapshot.value = JSON.stringify(siteData);
             hasUnsavedChanges.value = false;
+            conflictWarning.value = '';
             showToast('🎉 已發布至雲端！全校師生與家長即時同步');
             return true;
           }
@@ -1730,13 +1839,37 @@
         }
       };
 
+      const saveToCloud = async () => {
+        if (supabase && loadedCloudTimestamp.value > 0) {
+          try {
+            const { data } = await supabase.from('site_config').select('payload').eq('id', 'main_v4').maybeSingle();
+            const remoteTs = Number(data?.payload?._updatedAt) || 0;
+            if (remoteTs > loadedCloudTimestamp.value) {
+              const who = data?.payload?._updatedBy || '其他管理員';
+              conflictWarning.value = `由「${who}」更新`;
+              showToast('⚠️ 雲端有較新版本，請確認是否覆蓋');
+              return false;
+            }
+          } catch (e) {}
+        }
+        return await executeCloudUpsert();
+      };
+
+      const forceSaveToCloud = async () => {
+        return await executeCloudUpsert();
+      };
+
       const downloadJsonFile = (filename) => {
         try {
           const blob = new Blob([JSON.stringify(siteData, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
+          a.href = url;
           a.download = filename;
+          document.body.appendChild(a);
           a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
         } catch (e) {}
       };
 
@@ -1747,9 +1880,11 @@
 
       const saveAndExportBaseline = async () => {
         if (!isSystemAdmin.value) return;
-        await saveToCloud();
-        downloadJsonFile('東新教務處_v1.0第一版_基準備份.json');
-        showToast('📌 已完成雲端發布並下載 v1.0 第一版基準備份檔！');
+        const ok = await forceSaveToCloud();
+        if (ok) {
+          downloadJsonFile('東新教務處_v1.0第一版_基準備份.json');
+          showToast('📌 已完成雲端發布並下載 v1.0 第一版基準備份檔！');
+        }
       };
 
       const importJson = (e) => {
@@ -1760,6 +1895,7 @@
         reader.onload = (ev) => {
           try {
             applySiteData(JSON.parse(ev.target.result));
+            hasUnsavedChanges.value = true;
             showToast('📥 備份已載入，請記得點擊「儲存並發布」');
           } catch (err) {
             showToast('檔案格式錯誤');
@@ -1767,6 +1903,19 @@
         };
         reader.readAsText(file);
         e.target.value = '';
+      };
+
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible' && !adminMode.value) {
+          fetchCloudData();
+        }
+      };
+
+      const handleBeforeUnload = (e) => {
+        if (adminMode.value && hasUnsavedChanges.value) {
+          e.preventDefault();
+          e.returnValue = '';
+        }
       };
 
       onMounted(async () => {
@@ -1784,6 +1933,14 @@
           } catch (e) {}
           await fetchCloudData();
         }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('beforeunload', handleBeforeUnload);
+      });
+
+      onUnmounted(() => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
       });
 
       watch(siteData, (v) => {
@@ -1797,11 +1954,11 @@
       return {
         activePage, mainScroll, globalQuery, globalSearchResults,
         cloudConnected, userSession, adminMode, adminTab,
-        showLoginModal, loggingIn, saving, userSaving, hasUnsavedChanges, confirmDeleteId, toastMsg,
+        showLoginModal, loggingIn, saving, userSaving, hasUnsavedChanges, confirmDeleteId, conflictWarning, toastMsg,
         loginForm, siteData, userModal, navItems, visibleAdminTabs, isSystemAdmin, currentStaffBadge,
-        isRootAdmin, goPage, copyLink, safeRemove, moveItem,
+        isRootAdmin, normalizeUrl, goPage, copyLink, safeRemove, moveItem,
         openUserModal, submitUserModal, toggleUserStatus, deleteStaffUser,
-        handleLogin, handleLogout, saveToCloud, saveAndExportBaseline, reloadFromCloud,
+        handleLogin, handleLogout, saveToCloud, forceSaveToCloud, saveAndExportBaseline, reloadFromCloud,
         exportJson, importJson
       };
     }
