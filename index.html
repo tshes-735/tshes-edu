@@ -95,6 +95,10 @@
       </button>
 
       <div class="flex items-center gap-2 shrink-0">
+        <button v-if="!adminMode" type="button" @click="copyCurrentPageUrl" title="複製目前分頁專屬網址"
+          class="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-bold transition">
+          🔗 分享本頁網址
+        </button>
         <span v-if="cloudConnected" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-xs font-bold">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           雲端已同步
@@ -369,9 +373,14 @@
       <!-- 2. 子網頁：新生入學專區 (FRESHMAN) -->
       <template v-else-if="activePage === 'freshman'">
         <section class="rounded-[28px] bg-gradient-to-r from-rose-600 via-rose-500 to-orange-500 p-6 sm:p-7 text-white shadow-xs">
-          <button type="button" @click="goPage('home')" class="min-h-[34px] text-xs font-bold bg-white/20 hover:bg-white/30 px-3.5 py-1.5 rounded-full mb-3 transition">
-            ← 返回首頁總覽
-          </button>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <button type="button" @click="goPage('home')" class="min-h-[34px] text-xs font-bold bg-white/20 hover:bg-white/30 px-3.5 py-1.5 rounded-full transition">
+              ← 返回首頁總覽
+            </button>
+            <button type="button" @click="copyCurrentPageUrl" class="min-h-[34px] text-xs font-bold bg-slate-900/25 hover:bg-slate-900/40 px-3.5 py-1.5 rounded-full transition">
+              🔗 複製本分頁專屬網址
+            </button>
+          </div>
           <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">🎒 {{ siteData.freshman.title }}</h2>
           <p class="text-xs sm:text-sm text-rose-50 mt-1.5 leading-relaxed max-w-2xl">{{ siteData.freshman.subtitle }}</p>
         </section>
@@ -440,9 +449,14 @@
       <!-- 3. 子網頁：學習網站專區 (LEARNING) -->
       <template v-else-if="activePage === 'learning'">
         <section class="rounded-[28px] bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 sm:p-7 text-white shadow-xs">
-          <button type="button" @click="goPage('home')" class="min-h-[34px] text-xs font-bold bg-white/20 hover:bg-white/30 px-3.5 py-1.5 rounded-full mb-3 transition">
-            ← 返回首頁總覽
-          </button>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <button type="button" @click="goPage('home')" class="min-h-[34px] text-xs font-bold bg-white/20 hover:bg-white/30 px-3.5 py-1.5 rounded-full transition">
+              ← 返回首頁總覽
+            </button>
+            <button type="button" @click="copyCurrentPageUrl" class="min-h-[34px] text-xs font-bold bg-slate-900/25 hover:bg-slate-900/40 px-3.5 py-1.5 rounded-full transition">
+              🔗 複製本分頁專屬網址
+            </button>
+          </div>
           <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">🚀 {{ siteData.learningPageTitle }}</h2>
           <p class="text-xs sm:text-sm text-emerald-50 mt-1.5 leading-relaxed max-w-2xl">{{ siteData.learningPageSubtitle }}</p>
         </section>
@@ -486,9 +500,14 @@
       <!-- 4. 子網頁：各項申辦手續 (FORMS) -->
       <template v-else-if="activePage === 'forms'">
         <section class="rounded-[28px] bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 p-6 sm:p-7 text-white shadow-xs">
-          <button type="button" @click="goPage('home')" class="min-h-[34px] text-xs font-bold bg-white/20 hover:bg-white/30 px-3.5 py-1.5 rounded-full mb-3 transition">
-            ← 返回首頁總覽
-          </button>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <button type="button" @click="goPage('home')" class="min-h-[34px] text-xs font-bold bg-white/20 hover:bg-white/30 px-3.5 py-1.5 rounded-full transition">
+              ← 返回首頁總覽
+            </button>
+            <button type="button" @click="copyCurrentPageUrl" class="min-h-[34px] text-xs font-bold bg-slate-900/25 hover:bg-slate-900/40 px-3.5 py-1.5 rounded-full transition">
+              🔗 複製本分頁專屬網址
+            </button>
+          </div>
           <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">📝 {{ siteData.formsPageTitle }}</h2>
           <p class="text-xs sm:text-sm text-amber-50 mt-1.5 leading-relaxed max-w-2xl">{{ siteData.formsPageSubtitle }}</p>
         </section>
@@ -530,9 +549,14 @@
       <!-- 5. 子網頁：組織與課程計畫 (ORG & CURRICULUM) -->
       <template v-else-if="activePage === 'org'">
         <section class="rounded-[28px] bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-6 sm:p-7 text-white shadow-xs">
-          <button type="button" @click="goPage('home')" class="min-h-[34px] text-xs font-bold bg-white/20 hover:bg-white/30 px-3.5 py-1.5 rounded-full mb-3 transition">
-            ← 返回首頁總覽
-          </button>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <button type="button" @click="goPage('home')" class="min-h-[34px] text-xs font-bold bg-white/20 hover:bg-white/30 px-3.5 py-1.5 rounded-full transition">
+              ← 返回首頁總覽
+            </button>
+            <button type="button" @click="copyCurrentPageUrl" class="min-h-[34px] text-xs font-bold bg-slate-900/25 hover:bg-slate-900/40 px-3.5 py-1.5 rounded-full transition">
+              🔗 複製本分頁專屬網址
+            </button>
+          </div>
           <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">🏛️ {{ siteData.orgPageTitle }}</h2>
           <p class="text-xs sm:text-sm text-sky-100 mt-1.5 leading-relaxed max-w-2xl">{{ siteData.orgPageSubtitle }}</p>
         </section>
@@ -605,7 +629,6 @@
     <!-- ==================== 【後台管理模式：雙層權限控管】 ==================== -->
     <div v-else class="space-y-5 pb-6">
 
-      <!-- 多人協作覆蓋衝突警告橫幅 -->
       <div v-if="conflictWarning" class="rounded-3xl bg-amber-50 border-2 border-amber-400 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
         <div class="space-y-1">
           <p class="text-sm font-extrabold text-amber-950">⚠️ 偵測到雲端有其他管理員剛發布的新版本（{{ conflictWarning }}）</p>
@@ -1072,7 +1095,7 @@
     </div>
   </main>
 
-  <!-- 新增／編輯使用者帳號 Modal（含小螢幕安全滾動） -->
+  <!-- 新增／編輯使用者帳號 Modal -->
   <div v-if="userModal.open" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4"
     @click.self="userModal.open = false">
     <form @submit.prevent="submitUserModal" class="bg-white w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-[28px] p-6 space-y-4 shadow-xl">
@@ -1141,7 +1164,7 @@
     </form>
   </div>
 
-  <!-- 純淨教務處人員登入 Modal（通用提示，含小螢幕安全滾動） -->
+  <!-- 純淨教務處人員登入 Modal -->
   <div v-if="showLoginModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4"
     @click.self="showLoginModal = false">
     <form @submit.prevent="handleLogin" class="bg-white w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-[28px] p-6 space-y-4 shadow-xl">
@@ -1323,10 +1346,16 @@
   createApp({
     setup() {
       const CACHE_KEY = 'tshes_official_v1_rbac';
+      const VALID_PAGES = ['home', 'freshman', 'learning', 'forms', 'org'];
       const isSupabaseConfigured = SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20;
       const supabase = isSupabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-      const activePage = ref('home');
+      const parseHashPage = () => {
+        const raw = (window.location.hash || '').replace(/^#\/?/, '').split('?')[0].trim();
+        return VALID_PAGES.includes(raw) ? raw : 'home';
+      };
+
+      const activePage = ref(parseHashPage());
       const mainScroll = ref(null);
       const globalQuery = ref('');
       const cloudConnected = ref(false);
@@ -1509,6 +1538,13 @@
         }
       };
 
+      const copyCurrentPageUrl = () => {
+        const base = window.location.href.split('#')[0];
+        const targetUrl = `${base}#/${activePage.value}`;
+        const currentNav = navItems.find(n => n.id === activePage.value);
+        copyLink(targetUrl, currentNav ? currentNav.label + '分頁' : '本頁');
+      };
+
       const safeRemove = (arr, idx, id) => {
         if (confirmDeleteId.value === id) {
           arr.splice(idx, 1);
@@ -1529,10 +1565,24 @@
         arr[target] = temp;
       };
 
-      const goPage = (pageId) => {
-        activePage.value = pageId;
+      const goPage = (pageId, updateHash = true) => {
+        const target = VALID_PAGES.includes(pageId) ? pageId : 'home';
+        activePage.value = target;
         globalQuery.value = '';
+        if (updateHash) {
+          const desiredHash = `#/${target}`;
+          if (window.location.hash !== desiredHash) {
+            window.history.pushState(null, '', desiredHash);
+          }
+        }
         if (mainScroll.value) mainScroll.value.scrollTop = 0;
+      };
+
+      const handleHashChange = () => {
+        const target = parseHashPage();
+        if (activePage.value !== target) {
+          goPage(target, false);
+        }
       };
 
       const enforceAccountStatus = async () => {
@@ -1919,6 +1969,9 @@
       };
 
       onMounted(async () => {
+        if (!window.location.hash) {
+          window.history.replaceState(null, '', `#/${activePage.value}`);
+        }
         try {
           const cached = localStorage.getItem(CACHE_KEY);
           if (cached) applySiteData(JSON.parse(cached));
@@ -1934,11 +1987,13 @@
           await fetchCloudData();
         }
 
+        window.addEventListener('hashchange', handleHashChange);
         document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('beforeunload', handleBeforeUnload);
       });
 
       onUnmounted(() => {
+        window.removeEventListener('hashchange', handleHashChange);
         document.removeEventListener('visibilitychange', handleVisibilityChange);
         window.removeEventListener('beforeunload', handleBeforeUnload);
       });
@@ -1956,7 +2011,7 @@
         cloudConnected, userSession, adminMode, adminTab,
         showLoginModal, loggingIn, saving, userSaving, hasUnsavedChanges, confirmDeleteId, conflictWarning, toastMsg,
         loginForm, siteData, userModal, navItems, visibleAdminTabs, isSystemAdmin, currentStaffBadge,
-        isRootAdmin, normalizeUrl, goPage, copyLink, safeRemove, moveItem,
+        isRootAdmin, normalizeUrl, goPage, copyLink, copyCurrentPageUrl, safeRemove, moveItem,
         openUserModal, submitUserModal, toggleUserStatus, deleteStaffUser,
         handleLogin, handleLogout, saveToCloud, forceSaveToCloud, saveAndExportBaseline, reloadFromCloud,
         exportJson, importJson
